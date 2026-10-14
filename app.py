@@ -1,11 +1,12 @@
 from rich.console import Console
-
+from system.fastfetch import Fastfetch
 from ui.menu import Menu
 
 
 class Application:
 
     def __init__(self):
+        self.fastfetch = Fastfetch()
         self.console = Console()
         self.menu = Menu(self.console)
         self.running = True
@@ -55,8 +56,7 @@ class Application:
                 )
 
             elif choice == "6":
-                self.show_placeholder("Информация о системе")
-
+                self.show_fastfetch()
             else:
                 self.console.print(
                     "[red]Неизвестный пункт меню.[/red]"
@@ -98,3 +98,20 @@ class Application:
 
     def pause(self):
         self.console.input("\n[dim]Нажмите Enter для продолжения...[/dim]")
+
+    def show_fastfetch(self):
+        self.console.clear()
+
+        if not self.fastfetch.is_available():
+            self.console.print("[red]Fastfetch не найден.[/red]")
+            self.console.print(
+                "Установи: sudo pacman -S fastfetch"
+            )
+            self.pause()
+            return
+
+        self.fastfetch.run()
+
+        self.console.input(
+            "\n[dim]Нажмите Enter для возврата в меню...[/dim]"
+        )
