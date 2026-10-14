@@ -2,6 +2,7 @@ from rich.console import Console
 from system.fastfetch import Fastfetch
 from ui.menu import Menu
 from system.btop import Btop
+from checks.internet.connectivity import ConnectivityCheck
 
 
 class Application:
@@ -9,6 +10,7 @@ class Application:
     def __init__(self):
         self.fastfetch = Fastfetch()
         self.btop = Btop()
+        self.connectivity_check = ConnectivityCheck()
         self.console = Console()
         self.menu = Menu(self.console)
         self.running = True
@@ -93,7 +95,11 @@ class Application:
 
             if choice.isdigit() and 1 <= int(choice) <= len(options):
                 selected = options[int(choice) - 1]
-                self.show_placeholder(selected)
+
+                if selected == "Проверка доступности интернета":
+                    self.show_internet_check()
+                else:
+                    self.show_placeholder(selected)
             else:
                 self.console.print("[red]Неверный выбор.[/red]")
                 self.pause()
@@ -134,3 +140,63 @@ class Application:
         self.btop.run()
 
         self.console.clear()
+
+    def show_internet_check(self):
+        self.console.clear()
+        self.console.print(
+            "[bold cyan]Tscan | Проверка доступности интернета[/bold cyan]\n"
+        )
+        self.console.print("Проверяем контрольные узлы...\n")
+
+        results = self.connectivity_check.check()
+
+        from rich.table import Table
+
+        table = Table()
+        table.add_column("Узел")
+        table.add_column("Статус")
+        table.add_column("HTTP")
+        table.add_column("Задержка")
+
+        for result in results:
+            status = (
+                "[green]Доступен[/green]"
+                if result["available"]
+                else "[red]Недоступен[/red]"
+            )
+
+            http_status = (
+                str(result["status"])
+                if result["status"] is not None
+                else "—"
+            )
+
+            latency = (
+                f'{result["latency_ms"]} мс'
+                if result["latency_ms"] is not None
+                else "—"
+            )
+
+            table.add_row(
+                result["name"],
+                status,
+                http_status,
+                latency,
+            )
+
+        self.console.print(table)
+
+        available = sum(r["available"] for r in results)
+
+        if available == len(results):
+            self.console.print("\n[bold green]Интернет доступен.[/bold green]")
+        elif available:
+            self.console.print(
+                "\n[bold yellow]Частичная доступность интернета.[/bold yellow]"
+            )
+        else:
+            self.console.print(
+                "\n[bold red]Доступность интернета не подтверждена.[/bold red]"
+            )
+
+        self.pause()
