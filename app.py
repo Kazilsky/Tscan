@@ -1,12 +1,14 @@
 from rich.console import Console
 from system.fastfetch import Fastfetch
 from ui.menu import Menu
+from system.btop import Btop
 
 
 class Application:
 
     def __init__(self):
         self.fastfetch = Fastfetch()
+        self.btop = Btop()
         self.console = Console()
         self.menu = Menu(self.console)
         self.running = True
@@ -22,7 +24,7 @@ class Application:
                 self.running = False
 
             elif choice == "1":
-                self.show_placeholder("Мониторинг системы")
+                self.show_btop()
 
             elif choice == "2":
                 self.show_submenu(
@@ -115,3 +117,20 @@ class Application:
         self.console.input(
             "\n[dim]Нажмите Enter для возврата в меню...[/dim]"
         )
+
+    def show_btop(self):
+        self.console.clear()
+
+        if not self.btop.is_available():
+            self.console.print(
+                "[red]btop не найден.[/red]"
+            )
+            self.console.print(
+                "Установи его: sudo pacman -S btop"
+            )
+            self.pause()
+            return
+
+        self.btop.run()
+
+        self.console.clear()
