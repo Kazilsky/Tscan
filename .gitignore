@@ -1,0 +1,9 @@
+# base
+.git
+
+# editors
+.idea
+.vscode
+.nvim
+
+# .env emp
