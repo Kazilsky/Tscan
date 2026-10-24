@@ -1,2 +1,2 @@
 psutil
-rich
+textual
